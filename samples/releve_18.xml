@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DocumentAcademique xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+<Releve id="releve_ETUD-001">
+  <Etudiant id="ETUD-001">
+    <Nom>Mamadou Sow</Nom>
+    <Email>etudiant@univ.com</Email>
+  </Etudiant>
+  <Evaluation>
+    <Matiere>Sécurité Informatique</Matiere>
+    <Coefficient>2</Coefficient>
+    <Note valeur="18.0"/>
+    <Commentaire>Insuffisant</Commentaire>
+    <DateSignature>2026-11-19 13:26:22</DateSignature>
+  </Evaluation>
+</Releve>
+  <ds:Signature>
+    <ds:SignedInfo>
+      <ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+      <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+      <ds:Reference URI="#releve_ETUD-001">
+        <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+        <ds:DigestValue>zaiLMaRKQAF39gX0l6BR7NY7/xDpctjoBOsz7Z2nSJY=</ds:DigestValue>
+      </ds:Reference>
+    </ds:SignedInfo>
+    <ds:SignatureValue>XJ1cj2En5GK8wwZHqYQO/iamkzb0OIHtaIr6KIz9ITXrUpjTXUyJFFvn5sw78Ktm90HILLbduYKtinSHp/4IhevvnCY+wRm/WO47sSRVMqljiyGzcjLjuFHqXIVvRgmGr4nODy4zRvpoV+5DEHUqhr5jWtf2zrvXSYAK7lpOWtCfUAlguSPuCGf/fP+EMsibCRD5pb41oBWI3Dh/medhxsO5xNT7EpjV9NPTaqQKUAiyCXXbyiyctn7aPVYd6PTyD05BM4nGTCOclxSCh24a+IvxGOW4uoczFaY44x+y0LCDMGwUCxUsaLiw4i/AySQmMPZKpFNjBFXQC0GO710ofA==</ds:SignatureValue>
+  </ds:Signature>
+</DocumentAcademique>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+               xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+               xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+               ID="resp_e25e67f6e50c" Version="2.0" IssueInstant="2026-11-19T13:26:21Z">
+  <saml:Issuer>https://idp.univ-thies.sn/saml2</saml:Issuer>
+  <saml:Assertion ID="assertion_22772d9c8a8afa25" Version="2.0" IssueInstant="2026-11-19T13:26:21Z">
+    <saml:Issuer>https://idp.univ-thies.sn/saml2</saml:Issuer>
+    <saml:Subject xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"><saml:NameID>etudiant@univ.com</saml:NameID></saml:Subject><saml:AttributeStatement xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"><saml:Attribute Name="Role"><saml:AttributeValue>teacher</saml:AttributeValue></saml:Attribute><saml:Attribute Name="FullName"><saml:AttributeValue>Mamadou Sow</saml:AttributeValue></saml:Attribute><saml:Attribute Name="StudentID"><saml:AttributeValue>ETUD-001</saml:AttributeValue></saml:Attribute></saml:AttributeStatement>
+    <ds:Signature>
+      <ds:SignedInfo>
+        <ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+        <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+        <ds:Reference URI="#assertion_22772d9c8a8afa25">
+          <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+          <ds:DigestValue>IOGLcPQGlXXmQCbBkx64fTIoXMNf3nBj+UX2rjjab/g=</ds:DigestValue>
+        </ds:Reference>
+      </ds:SignedInfo>
+      <ds:SignatureValue>omoGBbmlASOXRsbjgInTV7YDxh6TtBsa/MrMwicYVsjHXnVJrz3IaEtE5WTyEAm++1Y7ccKl73Plr3eE73fkk5A3s6F/GXLTa3AqqiaggUd12Zs1uREtBTTRvnQ/LixE7ncHr+Cbr7tBgj+xOjqRpXHsOrOJFTvqX2Cj8CPkC7otRjwpLsP7gjEWfohbFyi+ZIuTxIwUDSSbCR1hUUbvmeFIzXz4bfcmH6qwuOcX8/ELzkOejZPKa2ISAg23bp2FA+nt4lGqFYOnedQEMdYsnGV48t6r5xLOlf+9uafDMBaI7l0t9jocBxAki9qAWfUhwPHxFdPcaZBlQ5MOldL8Yw==</ds:SignatureValue>
+    </ds:Signature>
+  </saml:Assertion>
+</samlp:Response>

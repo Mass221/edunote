@@ -1,0 +1,55 @@
+{
+  "vulnerable_mode": true,
+  "users": [
+    {
+      "email": "etudiant@univ.com",
+      "password": "pass",
+      "role": "student",
+      "name": "Mamadou Sow",
+      "student_id": "ETUD-001"
+    },
+    {
+      "email": "prof@univ.com",
+      "password": "pass",
+      "role": "teacher",
+      "name": "Dr. Abdoulaye Diop",
+      "course": "Sécurité Informatique"
+    },
+    {
+      "email": "admin@univ.com",
+      "password": "pass",
+      "role": "admin",
+      "name": "Responsable Laboratoire UIDT"
+    }
+  ],
+  "grades": [
+    {
+      "id": 1,
+      "student_id": "ETUD-001",
+      "name": "Mamadou Sow",
+      "course": "Sécurité Informatique",
+      "grade": 8.0,
+      "coefficient": 2,
+      "comment": "Insuffisant - À revoir"
+    },
+    {
+      "id": 2,
+      "student_id": "ETUD-002",
+      "name": "Aïssatou Diallo",
+      "course": "Sécurité Informatique",
+      "grade": 14.5,
+      "coefficient": 2,
+      "comment": "Bon travail"
+    },
+    {
+      "id": 3,
+      "student_id": "ETUD-003",
+      "name": "Cheikh Ndiaye",
+      "course": "Sécurité Informatique",
+      "grade": 11.0,
+      "coefficient": 2,
+      "comment": "Passable"
+    }
+  ],
+  "logs": []
+}
