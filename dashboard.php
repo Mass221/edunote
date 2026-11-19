@@ -1,11 +1,11 @@
 <?php
-// dashboard.php - PAGE 3 : Tableau de Bord & Traitement SAML (Failles SAML & XXE)
+// dashboard.php - Tableau de Bord Officiel EduNotes (UIDT)
 require_once __DIR__ . '/config.php';
 
 $authError = null;
 $xxePayloadDetected = null;
 
-// 1. Traitement d'une assertion SAML POSTée (depuis idp.php ou Burp Suite)
+// 1. Réception et traitement de l'assertion SAML POSTée
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['SAMLResponse']) || isset($_POST['saml_xml']))) {
     $rawXml = '';
     if (!empty($_POST['saml_xml'])) {
@@ -18,11 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['SAMLResponse']) || i
     $result = validate_saml_assertion($rawXml, $isVuln);
 
     if (!$result['success']) {
-        // Enregistrement de l'attaque bloquée dans le journal
         log_security_event('SAML_AUTH_REJECTED', 'BLOCKED', $result['message']);
         $authError = $result;
     } else {
-        // Authentification réussie
         $sessionUser = [
             'email' => $result['email'],
             'role' => $result['role'],
@@ -46,56 +44,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['SAMLResponse']) || i
     }
 }
 
-// 2. Si un rejet de sécurité 403 s'est produit (Mode Sécurisé actif)
+// 2. Si une erreur de sécurité survient (Rejet 403 officiel)
 if ($authError) {
     http_response_code(403);
-    require_once __DIR__ . '/includes/header.php';
+    require_once __DIR__ . '/includes/header_portal.php';
     ?>
-    <div class="max-w-3xl mx-auto my-8">
-        <div class="bg-white rounded-2xl border-2 border-red-500 shadow-2xl overflow-hidden">
-            <div class="bg-red-600 text-white p-6 flex items-center gap-4">
-                <span class="text-4xl">⛔</span>
-                <div>
-                    <h1 class="text-xl font-black">ACCÈS REFUSÉ – ERREUR 403 FORBIDDEN</h1>
-                    <p class="text-red-100 text-xs mt-0.5 font-medium">Contrôle de sécurité du Service Provider EduNotes</p>
-                </div>
+    <div class="max-w-2xl mx-auto my-12">
+        <div class="bg-white rounded-3xl border border-red-200 shadow-xl overflow-hidden text-center p-8 sm:p-10 space-y-6">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center text-3xl mx-auto">
+                ⛔
             </div>
 
-            <div class="p-6 sm:p-8 space-y-6">
-                <div class="bg-red-50 border-l-4 border-red-600 p-4 rounded-r-lg">
-                    <div class="font-bold text-red-900 text-sm">
-                        <?= htmlspecialchars($authError['message']) ?>
-                    </div>
-                    <?php if (isset($authError['claimed_digest'])): ?>
-                    <div class="mt-3 font-mono text-xs text-red-700 bg-white p-3 rounded border border-red-200 space-y-1">
-                        <div><strong>Digest attendu (signé) :</strong> <?= htmlspecialchars($authError['claimed_digest']) ?></div>
-                        <div><strong>Digest recalculé (C14N) :</strong> <?= htmlspecialchars($authError['calculated_digest']) ?></div>
-                    </div>
-                    <?php endif; ?>
-                </div>
+            <div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-red-700 bg-red-50 px-3 py-1 rounded-full border border-red-200">
+                    Sécurité des Données · Erreur 403
+                </span>
+                <h1 class="text-2xl font-black text-slate-900 mt-3">Accès Refusé – Signature Invalide</h1>
+                <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                    Le serveur EduNotes n'a pas pu authentifier l'assertion SAML 2.0. Le document a été altéré en transit ou la signature cryptographique ne correspond pas à la clé publique de l'IdP.
+                </p>
+            </div>
 
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-2">
-                    <p class="font-bold text-slate-800">💡 Ce que cette défense démontre au jury :</p>
-                    <p>
-                        En <strong>Mode Sécurisé</strong>, le serveur EduNotes recalcule l'empreinte SHA-256 canonique (C14N) du document 
-                        et vérifie la signature cryptographique X.509 de l'IdP. Toute altération en transit (comme le passage de 
-                        <code>role=student</code> à <code>role=teacher</code>) est immédiatement bloquée.
-                    </p>
-                </div>
+            <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl text-left text-xs font-mono text-slate-700 space-y-1">
+                <div><strong>Cause du rejet :</strong> <?= htmlspecialchars($authError['message']) ?></div>
+                <?php if (isset($authError['claimed_digest'])): ?>
+                <div><strong>Digest revendiqué :</strong> <?= htmlspecialchars($authError['claimed_digest']) ?></div>
+                <div><strong>Digest recalculé :</strong> <?= htmlspecialchars($authError['calculated_digest']) ?></div>
+                <?php endif; ?>
+            </div>
 
-                <div class="flex flex-wrap gap-3 pt-2">
-                    <a href="index.php" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-5 py-2.5 rounded-lg transition">
-                        ← Retour à l'accueil
-                    </a>
-                    <a href="toggle_mode.php" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg transition">
-                        ⚠️ Rejouer l'attaque en Mode Vulnérable
-                    </a>
-                </div>
+            <div class="pt-2">
+                <a href="index.php" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-6 py-3 rounded-xl transition">
+                    ← Retourner au portail d'accueil
+                </a>
             </div>
         </div>
     </div>
     <?php
-    require_once __DIR__ . '/includes/footer.php';
+    require_once __DIR__ . '/includes/footer_portal.php';
     exit;
 }
 
@@ -111,193 +97,113 @@ $isTeacher = ($currentUser['role'] === 'teacher');
 $isStudent = ($currentUser['role'] === 'student');
 $lastXxe = $_SESSION['last_xxe'] ?? null;
 
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/header_portal.php';
 ?>
 
 <div class="max-w-5xl mx-auto space-y-8">
 
-    <!-- 1. ALERTE SPÉCIALE EN CAS D'USURPATION DE RÔLE RÉUSSIE (ATTAQUE 1) -->
+    <!-- ALERTE PÉDAGOGIQUE SI L'ÉTUDIANT A RÉUSSI L'USURPATION -->
     <?php if (!empty($currentUser['is_impostor'])): ?>
-    <div class="bg-amber-500 text-slate-950 p-6 rounded-2xl shadow-xl border-4 border-amber-600 animate-pulse-slow">
+    <div class="bg-amber-500 text-slate-950 p-6 rounded-2xl shadow-xl border-2 border-amber-600">
         <div class="flex items-start gap-4">
-            <span class="text-4xl">🚨</span>
+            <span class="text-3xl">🚨</span>
             <div>
-                <span class="bg-slate-950 text-amber-400 font-black text-xs uppercase px-2.5 py-1 rounded">
-                    ATTAQUE 1 RÉUSSIE · USURPATION SAML
+                <span class="bg-slate-950 text-amber-400 font-black text-[10px] uppercase px-2 py-0.5 rounded">
+                    IMPACT DE L'ATTAQUE 1 CONSTATÉ SUR LA VICTIME
                 </span>
-                <h2 class="text-xl font-black mt-2 leading-tight">
-                    Élévation de Privilèges : L'étudiant a obtenu le rôle Enseignant !
-                </h2>
-                <p class="text-slate-900 text-xs mt-1.5 leading-relaxed">
-                    L'assertion SAML de <strong>Mamadou Sow (etudiant@univ.com)</strong> a été modifiée en transit avec <code>role=teacher</code>. 
-                    Comme le serveur tourne en <strong>Mode Vulnérable</strong>, la signature n'a pas été contrôlée. 
-                    L'étudiant a désormais accès au carnet de notes de tous les élèves de l'université !
+                <h3 class="text-lg font-black mt-1">Élévation de Privilèges Réussie !</h3>
+                <p class="text-xs text-slate-950 mt-1 leading-relaxed">
+                    L'étudiant <strong>Mamadou Sow</strong> a accédé à l'Espace Enseignant avec les droits complets sur les délibérations, car le serveur en mode non durci a lu le rôle sans valider la signature de l'IdP.
                 </p>
-                <div class="mt-4 flex gap-2">
-                    <a href="notes.php" class="bg-slate-950 text-white font-bold text-xs px-4 py-2 rounded-lg hover:bg-slate-800 transition">
-                        Voir les notes de tous les étudiants →
-                    </a>
-                    <a href="toggle_mode.php" class="bg-white text-slate-950 font-bold text-xs px-4 py-2 rounded-lg hover:bg-slate-100 transition">
-                        🛡️ Activer la Défense (Mode Sécurisé)
-                    </a>
-                </div>
             </div>
         </div>
     </div>
     <?php endif; ?>
 
-    <!-- 2. ALERTE SPÉCIALE EN CAS D'ATTAQUE XXE RÉUSSIE (ATTAQUE 2) -->
+    <!-- ALERTE PÉDAGOGIQUE SI UNE FUITE XXE EST SURVENUE -->
     <?php if ($lastXxe): ?>
-    <div class="bg-rose-950 text-white p-6 rounded-2xl shadow-xl border-4 border-rose-600">
+    <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl border border-slate-800">
         <div class="flex items-start gap-4">
-            <span class="text-4xl">💥</span>
+            <span class="text-3xl">💥</span>
             <div>
-                <span class="bg-rose-600 text-white font-black text-xs uppercase px-2.5 py-1 rounded">
-                    ATTAQUE 2 RÉUSSIE · EXFILTRATION XXE
+                <span class="bg-rose-600 text-white font-black text-[10px] uppercase px-2 py-0.5 rounded">
+                    IMPACT DE L'ATTAQUE 2 (XXE)
                 </span>
-                <h2 class="text-xl font-black mt-2 leading-tight">
-                    Fuite de Fichier Système / Confidentiel réussie !
-                </h2>
-                <p class="text-rose-200 text-xs mt-1.5">
-                    Le parseur XML a résolu l'entité externe <code>&lt;!ENTITY xxe SYSTEM "..."&gt;</code>. Voici le contenu extrait du serveur :
-                </p>
-                <pre class="mt-3 bg-black text-emerald-400 p-4 rounded-xl font-mono text-xs overflow-x-auto border border-rose-800 shadow-inner leading-relaxed"><?= htmlspecialchars($lastXxe) ?></pre>
-                <button onclick="this.parentElement.parentElement.parentElement.remove()" class="mt-3 text-xs text-rose-300 hover:text-white underline">
-                    Fermer cette notification
-                </button>
+                <h3 class="text-lg font-black mt-1">Fichier Serveur Exfiltré dans la Réponse !</h3>
+                <pre class="mt-3 bg-black text-emerald-400 p-4 rounded-xl font-mono text-xs overflow-x-auto border border-slate-800"><?= htmlspecialchars($lastXxe) ?></pre>
             </div>
         </div>
     </div>
     <?php endif; ?>
 
-    <!-- 3. EN-TÊTE DU TABLEAU DE BORD SELON LE RÔLE -->
+    <!-- EN-TÊTE DU TABLEAU DE BORD OFFICIEL -->
     <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-            <div class="text-xs font-black uppercase tracking-wider <?= $isTeacher ? 'text-amber-600' : 'text-blue-600' ?>">
-                <?= $isTeacher ? 'Espace Pédagogique (Enseignant)' : 'Espace Étudiant' ?>
+            <div class="text-xs font-black uppercase tracking-wider text-blue-700">
+                <?= $isTeacher ? 'Espace Enseignant · Délibérations' : 'Espace Étudiant · Licence 2 Informatique' ?>
             </div>
             <h1 class="text-2xl font-black text-slate-900 mt-1">
-                Bienvenue, <?= htmlspecialchars($currentUser['name']) ?> !
+                Bienvenue, <?= htmlspecialchars($currentUser['name']) ?>
             </h1>
             <p class="text-xs text-slate-500 mt-1">
-                Compte : <strong><?= htmlspecialchars($currentUser['email']) ?></strong> • Rôle actif : <span class="font-mono font-bold"><?= htmlspecialchars($currentUser['role']) ?></span>
+                Identifiant : <span class="font-mono"><?= htmlspecialchars($currentUser['email']) ?></span> · Rôle accordé : <span class="font-bold text-slate-800"><?= htmlspecialchars($currentUser['role']) ?></span>
             </p>
         </div>
 
         <div class="flex items-center gap-2">
-            <a href="notes.php" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition flex items-center gap-1.5">
-                <span>📊</span> <?= $isTeacher ? 'Gérer les notes' : 'Mes notes et relevé' ?>
-            </a>
-            <a href="index.php?action=logout" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-2.5 rounded-xl transition">
-                Déconnexion
+            <a href="notes.php" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition">
+                <?= $isTeacher ? 'Gérer les délibérations' : 'Consulter mes notes et relevé' ?> →
             </a>
         </div>
     </div>
 
-    <!-- 4. APERÇU DES NOTES EN BASE -->
+    <!-- CARNET DE NOTES ACADÉMIQUE -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="p-6 border-b border-slate-100 flex items-center justify-between">
             <div>
-                <h3 class="font-black text-slate-900 text-base">Carnet de Notes Officiel (Sécurité Informatique)</h3>
+                <h2 class="font-black text-slate-900 text-base">Carnet d'Évaluation – Sécurité Informatique</h2>
                 <p class="text-xs text-slate-500 mt-0.5">
-                    <?= $isTeacher ? 'Accès complet en lecture et écriture sur la promotion L2' : 'Consultation personnelle de vos résultats' ?>
+                    <?= $isTeacher ? 'Affichage complet des notes de la promotion (Droits Enseignant)' : 'Vos résultats académiques personnels' ?>
                 </p>
             </div>
             <span class="text-xs bg-slate-100 font-mono text-slate-600 px-3 py-1 rounded-full border border-slate-200">
-                <?= count($db['grades']) ?> notes enregistrées
+                Semestre 3 · 2026/2027
             </span>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200">
-                    <tr>
-                        <th class="p-4">Numéro Étudiant</th>
-                        <th class="p-4">Nom et Prénom</th>
-                        <th class="p-4">Matière</th>
-                        <th class="p-4 text-center">Note / 20</th>
-                        <th class="p-4">Observation</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    <?php 
-                    foreach ($db['grades'] as $g): 
-                        // L'étudiant ne voit que ses notes s'il n'est pas enseignant
-                        if ($isStudent && $g['student_id'] !== $currentUser['student_id'] && empty($currentUser['is_impostor'])) {
-                            continue;
-                        }
-                        $gradeBadge = $g['grade'] >= 10 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200';
-                    ?>
-                    <tr class="hover:bg-slate-50 transition <?= ($g['student_id'] === 'ETUD-001') ? 'bg-amber-50/50' : '' ?>">
-                        <td class="p-4 font-mono font-bold text-slate-600"><?= htmlspecialchars($g['student_id']) ?></td>
-                        <td class="p-4 font-bold text-slate-900">
-                            <?= htmlspecialchars($g['name']) ?>
-                            <?php if ($g['student_id'] === 'ETUD-001'): ?>
-                                <span class="ml-2 text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded font-black">Cible Démo</span>
-                            <?php endif; ?>
-                        </td>
-                        <td class="p-4 text-slate-600"><?= htmlspecialchars($g['course']) ?></td>
-                        <td class="p-4 text-center">
-                            <span class="font-mono font-black text-sm px-3 py-1 rounded-full border <?= $gradeBadge ?>">
-                                <?= number_format($g['grade'], 1) ?> / 20
-                            </span>
-                        </td>
-                        <td class="p-4 text-slate-500"><?= htmlspecialchars($g['comment']) ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- 5. JOURNAL D'AUDIT DES ÉVÉNEMENTS DE SÉCURITÉ (EF-09) -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-        <div class="flex items-center justify-between">
-            <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
-                <span>📋</span> Journal d'Audit & Événements de Sécurité (EF-09)
-            </h3>
-            <span class="text-xs text-slate-400">Traces en direct des attaques et rejets</span>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs font-mono">
-                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold">
-                    <tr>
-                        <th class="p-2.5">Horodatage</th>
-                        <th class="p-2.5">Événement</th>
-                        <th class="p-2.5">Mode</th>
-                        <th class="p-2.5">Statut</th>
-                        <th class="p-2.5">Détails</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    <?php 
-                    $recentLogs = array_reverse(array_slice($db['logs'] ?? [], -10));
-                    if (empty($recentLogs)):
-                    ?>
-                    <tr>
-                        <td colspan="5" class="p-4 text-center text-slate-400 italic">Aucun événement enregistré.</td>
-                    </tr>
-                    <?php else: foreach ($recentLogs as $log): ?>
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-2.5 text-slate-500"><?= htmlspecialchars($log['timestamp']) ?></td>
-                        <td class="p-2.5 font-bold text-slate-800"><?= htmlspecialchars($log['event']) ?></td>
-                        <td class="p-2.5">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-black <?= $log['mode'] === 'VULNERABLE' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800' ?>">
-                                <?= htmlspecialchars($log['mode']) ?>
-                            </span>
-                        </td>
-                        <td class="p-2.5 font-bold <?= $log['status'] === 'SUCCESS' ? 'text-emerald-600' : ($log['status'] === 'BLOCKED' ? 'text-red-600' : 'text-amber-600') ?>">
-                            <?= htmlspecialchars($log['status']) ?>
-                        </td>
-                        <td class="p-2.5 text-slate-600"><?= htmlspecialchars($log['details']) ?></td>
-                    </tr>
-                    <?php endforeach; endif; ?>
-                </tbody>
-            </table>
-        </div>
+        <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200">
+                <tr>
+                    <th class="p-4">N° Étudiant</th>
+                    <th class="p-4">Nom et Prénom</th>
+                    <th class="p-4">Unité d'Enseignement</th>
+                    <th class="p-4 text-center">Note / 20</th>
+                    <th class="p-4">Appréciation</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <?php 
+                foreach ($db['grades'] as $g): 
+                    if ($isStudent && $g['student_id'] !== $currentUser['student_id'] && empty($currentUser['is_impostor'])) {
+                        continue;
+                    }
+                ?>
+                <tr class="hover:bg-slate-50 transition <?= $g['student_id'] === 'ETUD-001' ? 'bg-amber-50/50' : '' ?>">
+                    <td class="p-4 font-mono font-bold text-slate-600"><?= htmlspecialchars($g['student_id']) ?></td>
+                    <td class="p-4 font-bold text-slate-900"><?= htmlspecialchars($g['name']) ?></td>
+                    <td class="p-4 text-slate-600"><?= htmlspecialchars($g['course']) ?></td>
+                    <td class="p-4 text-center">
+                        <span class="font-mono font-black text-sm px-3 py-1 rounded-full border <?= $g['grade'] >= 10 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200' ?>">
+                            <?= number_format($g['grade'], 1) ?> / 20
+                        </span>
+                    </td>
+                    <td class="p-4 text-slate-500"><?= htmlspecialchars($g['comment']) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
 
 </div>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/includes/footer_portal.php'; ?>
